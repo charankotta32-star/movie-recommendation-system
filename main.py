@@ -16,29 +16,22 @@ movies.dropna(inplace=True)
 # ---------------- HELPER FUNCTIONS ----------------
 
 def convert(text):
-    L = []
-    for i in ast.literal_eval(text):
-        L.append(i['name'])
-    return L
+    return [i['name'] for i in ast.literal_eval(text)]
 
 def convert_cast(text):
     L = []
-    counter = 0
-    for i in ast.literal_eval(text):
-        if counter < 3:
-            L.append(i['name'])
-            counter += 1
+    for i, item in enumerate(ast.literal_eval(text)):
+        if i < 3:
+            L.append(item['name'])
         else:
             break
     return L
 
 def fetch_director(text):
-    L = []
     for i in ast.literal_eval(text):
         if i['job'] == 'Director':
-            L.append(i['name'])
-            break
-    return L
+            return [i['name']]
+    return []
 
 def remove_space(L):
     return [i.replace(" ", "") for i in L]
@@ -50,19 +43,14 @@ movies['keywords'] = movies['keywords'].apply(convert)
 movies['cast'] = movies['cast'].apply(convert_cast)
 movies['crew'] = movies['crew'].apply(fetch_director)
 
-# remove spaces
 movies['genres'] = movies['genres'].apply(remove_space)
 movies['keywords'] = movies['keywords'].apply(remove_space)
 movies['cast'] = movies['cast'].apply(remove_space)
 movies['crew'] = movies['crew'].apply(remove_space)
 
-# split overview
 movies['overview'] = movies['overview'].apply(lambda x: x.split())
 
-# combine all features
 movies['tags'] = movies['overview'] + movies['genres'] + movies['keywords'] + movies['cast'] + movies['crew']
-
-# convert list to string
 movies['tags'] = movies['tags'].apply(lambda x: " ".join(x))
 
 # ---------------- STEMMING ----------------
@@ -70,10 +58,7 @@ movies['tags'] = movies['tags'].apply(lambda x: " ".join(x))
 ps = PorterStemmer()
 
 def stem(text):
-    y = []
-    for i in text.split():
-        y.append(ps.stem(i))
-    return " ".join(y)
+    return " ".join([ps.stem(word) for word in text.split()])
 
 movies['tags'] = movies['tags'].apply(stem)
 
@@ -92,8 +77,7 @@ def recommend(movie):
     movie = movie.title()
 
     if movie not in movies['title'].values:
-        print("Movie not found ❌")
-        return
+        return ["Movie not found ❌"]
 
     movie_index = movies[movies['title'] == movie].index[0]
     distances = similarity[movie_index]
@@ -101,16 +85,12 @@ def recommend(movie):
     movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:10]
 
     seen = set()
-    print(f"\n🎬 Recommendations for '{movie}':\n")
+    recommendations = []
 
     for i in movies_list:
         name = movies.iloc[i[0]].title
         if name not in seen:
-            print(name)
+            recommendations.append(name)
             seen.add(name)
 
-# ---------------- TEST ----------------
-
-recommend("Avatar")
-recommend("Batman Begins")
-recommend("Titanic")
+    return recommendations

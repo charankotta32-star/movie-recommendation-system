@@ -42,6 +42,21 @@ It uses text processing and similarity metrics to find movies with similar chara
 * NLTK
 
 ---
+## 📥 Dataset
+
+This project uses the **TMDB 5000 Movie Dataset**.
+
+You can download it from Kaggle:
+https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata
+
+The dataset contains metadata for ~5000 movies including:
+- Genres  
+- Cast  
+- Crew  
+- Keywords  
+- Overview  
+
+Download the dataset and place the CSV files in the project folder before running the code.
 
 ## ▶️ How to Run
 
@@ -74,13 +89,12 @@ recommend("Avatar")
 ```
 
 Output:
-
 ```
-Aliens
-Predators
-Titan A.E.
-...
-```
+Aliens vs Predator: Requiem  
+Aliens  
+Independence Day  
+Titan A.E.  
+Predators  
 
 ---
 

@@ -3,13 +3,23 @@ import ast
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.stem.porter import PorterStemmer
+import streamlit as st
 
 # ---------------- LOAD DATA ----------------
-movies = pd.read_csv("tmdb_5000_movies.csv")
-credits = pd.read_csv("tmdb_5000_credits.csv")
+
+@st.cache_data
+def load_data():
+    url_movies = "https://drive.google.com/uc?id=1Scd4KMJqpYO6UynA2ax99ow9YtsnX8MM"
+    url_credits = "https://drive.google.com/uc?id=1eQO0d3K3B7t9Ptjj0gG2myX01WD0BwFc"
+
+    movies = pd.read_csv(url_movies)
+    credits = pd.read_csv(url_credits)
+
+    return movies, credits
+movies, credits = load_data()
+# ---------------- MERGE & SELECT ----------------
 
 movies = movies.merge(credits, on='title')
-
 movies = movies[['movie_id', 'title', 'overview', 'genres', 'keywords', 'cast', 'crew']]
 movies.dropna(inplace=True)
 
@@ -19,13 +29,7 @@ def convert(text):
     return [i['name'] for i in ast.literal_eval(text)]
 
 def convert_cast(text):
-    L = []
-    for i, item in enumerate(ast.literal_eval(text)):
-        if i < 3:
-            L.append(item['name'])
-        else:
-            break
-    return L
+    return [i['name'] for i in ast.literal_eval(text)[:3]]
 
 def fetch_director(text):
     for i in ast.literal_eval(text):
@@ -33,8 +37,8 @@ def fetch_director(text):
             return [i['name']]
     return []
 
-def remove_space(L):
-    return [i.replace(" ", "") for i in L]
+def remove_space(lst):
+    return [i.replace(" ", "") for i in lst]
 
 # ---------------- DATA PROCESSING ----------------
 
@@ -64,12 +68,14 @@ movies['tags'] = movies['tags'].apply(stem)
 
 # ---------------- VECTORIZE ----------------
 
-cv = CountVectorizer(max_features=5000, stop_words='english')
-vectors = cv.fit_transform(movies['tags']).toarray()
+@st.cache_data
+def create_similarity(data):
+    cv = CountVectorizer(max_features=5000, stop_words='english')
+    vectors = cv.fit_transform(data['tags']).toarray()
+    similarity = cosine_similarity(vectors)
+    return similarity
 
-# ---------------- SIMILARITY ----------------
-
-similarity = cosine_similarity(vectors)
+similarity = create_similarity(movies)
 
 # ---------------- RECOMMEND FUNCTION ----------------
 
@@ -82,15 +88,17 @@ def recommend(movie):
     movie_index = movies[movies['title'] == movie].index[0]
     distances = similarity[movie_index]
 
-    movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:10]
+    movies_list = sorted(list(enumerate(distances)),
+                         reverse=True,
+                         key=lambda x: x[1])[1:10]
 
-    seen = set()
     recommendations = []
+    seen = set()
 
     for i in movies_list:
-        name = movies.iloc[i[0]].title
-        if name not in seen:
-            recommendations.append(name)
-            seen.add(name)
+        title = movies.iloc[i[0]].title
+        if title not in seen:
+            recommendations.append(title)
+            seen.add(title)
 
     return recommendations

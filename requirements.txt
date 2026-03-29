@@ -1,5 +1,5 @@
-pandas
-scikit-learn
-nltk
-streamlit
+streamlit==1.28.0
+pandas==1.5.3
+scikit-learn==1.3.2
+nltk==3.8.1
 altair==4.2.2

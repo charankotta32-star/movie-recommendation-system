@@ -1,20 +1,24 @@
 import streamlit as st
-from main import recommend
+from main import recommend, movies
 
-st.set_page_config(page_title="Movie Recommender", page_icon="🎬")
+# Page config
+st.set_page_config(page_title="Movie Recommender", page_icon="🎬", layout="centered")
 
+# Title
 st.title("🎬 Movie Recommendation System")
-st.write("Get movie recommendations based on similarity 🎯")
+st.markdown("Get movie recommendations instantly based on your favorite movie!")
 
-movie_name = st.text_input("Enter a movie name:")
+# Dropdown instead of text input
+selected_movie = st.selectbox(
+    "Choose a movie:",
+    movies['title'].values
+)
 
+# Button
 if st.button("Recommend"):
-    if movie_name:
-        results = recommend(movie_name)
+    recommendations = recommend(selected_movie)
 
-        st.subheader("🎥 Recommendations:")
+    st.subheader(f"Top recommendations for '{selected_movie}':")
 
-        for movie in results:
-            st.write(f"👉 {movie}")
-    else:
-        st.warning("Please enter a movie name.")
+    for i, movie in enumerate(recommendations, start=1):
+        st.write(f"{i}. {movie}")

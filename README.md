@@ -1,166 +1,105 @@
-# 🎬 Movie Recommendation System
+# 🎬 CineMatch – AI Movie Recommendation System
 
-A **content-based movie recommendation system** built using **Python, NLP, and Machine Learning**, deployed as an interactive web app using **Streamlit**.
-
----
-
-## 🌐 Live Demo
-
-👉 https://movie-recommendation-system-nmmznsackyuvidyu7dxzkp.streamlit.app/
+CineMatch is an AI-powered movie recommendation web app that suggests movies based on your preferences using content-based filtering and cosine similarity.
 
 ---
 
-## 📸 Demo
+## 🚀 Live Demo
 
-![App Screenshot](demo.png)
-
----
-
-## 📌 Overview
-
-This project recommends movies similar to a given movie based on features like:
-
-* Genres
-* Keywords
-* Cast
-* Director
-
-It uses **Natural Language Processing (NLP)** and **cosine similarity** to find and suggest movies with similar content.
+👉 https://movie-recommendation-system-mgbywxwexappja543tp7j7n.streamlit.app/
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-* 🔍 Search for any movie
-* 🎯 Get top similar movie recommendations
-* 🧠 NLP-based feature extraction
-* ⚡ Fast and efficient similarity computation
-* ❌ Handles invalid movie inputs
-
----
-
-## 🧠 How It Works
-
-1. Load movie and credits datasets
-2. Merge datasets based on movie title
-3. Clean and preprocess data
-4. Extract important features:
-
-   * Genres
-   * Keywords
-   * Cast (top 3 actors)
-   * Director
-5. Combine features into a single **tags column**
-6. Apply text preprocessing (lowercase, stemming)
-7. Convert text into numerical vectors using **CountVectorizer**
-8. Compute similarity using **cosine similarity**
-9. Recommend top similar movies
+* 🎯 Personalized movie recommendations
+* 🔥 Trending movies section (TMDB API)
+* 🎬 Movie posters, ratings & release year
+* 📽️ Watch movie trailers directly
+* ⚡ Fast and responsive UI
+* 🧠 Content-based filtering (ML)
 
 ---
 
-## 🛠️ Technologies Used
+## 🧠 Tech Stack
 
-* Python 🐍
-* Pandas
+* Python
+* Streamlit
+* Pandas, NumPy
 * Scikit-learn
 * NLTK
-* Streamlit
+* TMDB API
 
 ---
 
-## 📥 Dataset
+## 📸 Screenshots
 
-This project uses the **TMDB 5000 Movie Dataset**.
+### 🔥 Home + Trending
 
-🔗 https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata
+![Home](images/home.png)
 
-The dataset includes:
+### 🎯 Recommendations
 
-* Movie overview
-* Genres
-* Cast
-* Crew
-* Keywords
+![Recommendations](images/recommendations.png)
+
+### 🎬 Movie Details + Trailer
+
+![Details](images/details.png)
 
 ---
 
-## ▶️ How to Run Locally
+## 🎥 Demo Video
 
-1. Clone the repository:
+👉 https://drive.google.com/file/d/1E24Dyk4gFrHHZGqzyedi7AgT6XNBz5K_/view?usp=sharing
+
+---
+
+## ⚙️ How It Works
+
+1. Movie dataset is processed (genres, cast, keywords)
+2. Text data is converted into vectors using CountVectorizer
+3. Cosine similarity is calculated between movies
+4. Similar movies are recommended instantly
+
+---
+
+## 🛠️ Installation
 
 ```bash
-git clone https://github.com/charankotta32-star/movie-recommendation-system.git
-```
-
-2. Navigate to the project folder:
-
-```bash
+git clone https://github.com/your-username/movie-recommendation-system.git
 cd movie-recommendation-system
-```
-
-3. Install dependencies:
-
-```bash
 pip install -r requirements.txt
-```
-
-4. Run the app:
-
-```bash
 streamlit run app.py
 ```
 
 ---
 
-## 📌 Example
+## 🔐 API Key Setup
 
-**Input:**
-
-```
-Avatar
-```
-
-**Output:**
+Create a `.env` or use Streamlit secrets:
 
 ```
-Aliens  
-Independence Day  
-Titan A.E.  
-Predators  
+TMDB_API_KEY=your_api_key_here
 ```
-
----
-
-## 💡 Future Improvements
-
-* 🎨 Improve UI/UX design
-* 🎬 Add movie posters using API
-* 🔍 Use TF-IDF for better accuracy
-* 🌐 Deploy with database integration
-* 🤖 Add hybrid recommendation system
 
 ---
 
 ## 👨‍💻 Author
 
 **Charan Ram Sai**
-B.Tech CSE (AI & ML), SRM University
+B.Tech CSE (AI & ML) @ SRM KTR
+
+🔗 GitHub: https://github.com/charankotta32-star
 
 ---
 
-## ⭐ Show Your Support
+## 🌟 Future Improvements
 
-If you liked this project:
-
-⭐ Star this repository
-🍴 Fork it
-📢 Share it
-
----
-
-## 📬 Connect With Me
-
-* GitHub: https://github.com/charankotta32-star
-
+* 🔍 Smart search (no dropdown)
+* 🎨 Advanced UI animations
+* 📊 Better recommendation model
+* 🌐 Full-stack deployment
 
 ---
+
+## ⭐ If you like this project, give it a star!

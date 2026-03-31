@@ -8,7 +8,8 @@ import streamlit as st
 import nltk
 
 nltk.download('punkt')
-API_KEY = "16519757e8bfd9b60561ad9b7dca4dc2"
+import os
+API_KEY = os.getenv("TMDB_API_KEY")
 # ================== LOAD DATA ==================
 
 @st.cache_data

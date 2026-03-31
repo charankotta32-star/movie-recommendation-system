@@ -1,13 +1,15 @@
 import pandas as pd
 import ast
+import requests
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.stem.porter import PorterStemmer
 import streamlit as st
 import nltk
-nltk.download('punkt')
 
-# ---------------- LOAD DATA ----------------
+nltk.download('punkt')
+API_KEY = "16519757e8bfd9b60561ad9b7dca4dc2"
+# ================== LOAD DATA ==================
 
 @st.cache_data
 def load_data():
@@ -18,14 +20,17 @@ def load_data():
     credits = pd.read_csv(url_credits)
 
     return movies, credits
+
+
 movies, credits = load_data()
-# ---------------- MERGE & SELECT ----------------
+
+# ================== MERGE ==================
 
 movies = movies.merge(credits, on='title')
 movies = movies[['movie_id', 'title', 'overview', 'genres', 'keywords', 'cast', 'crew']]
 movies.dropna(inplace=True)
 
-# ---------------- HELPER FUNCTIONS ----------------
+# ================== HELPERS ==================
 
 def convert(text):
     return [i['name'] for i in ast.literal_eval(text)]
@@ -42,7 +47,7 @@ def fetch_director(text):
 def remove_space(lst):
     return [i.replace(" ", "") for i in lst]
 
-# ---------------- DATA PROCESSING ----------------
+# ================== PROCESS ==================
 
 movies['genres'] = movies['genres'].apply(convert)
 movies['keywords'] = movies['keywords'].apply(convert)
@@ -59,7 +64,7 @@ movies['overview'] = movies['overview'].apply(lambda x: x.split())
 movies['tags'] = movies['overview'] + movies['genres'] + movies['keywords'] + movies['cast'] + movies['crew']
 movies['tags'] = movies['tags'].apply(lambda x: " ".join(x))
 
-# ---------------- STEMMING ----------------
+# ================== STEMMING ==================
 
 ps = PorterStemmer()
 
@@ -68,7 +73,7 @@ def stem(text):
 
 movies['tags'] = movies['tags'].apply(stem)
 
-# ---------------- VECTORIZE ----------------
+# ================== VECTORIZE ==================
 
 @st.cache_data
 def create_similarity(data):
@@ -79,28 +84,134 @@ def create_similarity(data):
 
 similarity = create_similarity(movies)
 
-# ---------------- RECOMMEND FUNCTION ----------------
+# ================== 🎬 POSTER FETCH ==================
+
+def fetch_movie_details(movie_id):
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={API_KEY}&language=en-US"
+
+    try:
+        response = requests.get(url, timeout=5)
+        data = response.json()
+
+        poster_path = data.get("poster_path")
+        rating = data.get("vote_average", "N/A")
+        release_date = data.get("release_date", "")
+
+        year = release_date[:4] if release_date else "N/A"
+
+        poster = (
+            f"https://image.tmdb.org/t/p/w500{poster_path}"
+            if poster_path
+            else "https://via.placeholder.com/300x450?text=No+Image"
+        )
+
+        return poster, rating, year
+
+    except Exception:
+        return "https://via.placeholder.com/300x450?text=Error", "N/A", "N/A"
+
+# ================== 🎯 RECOMMEND ==================
 
 def recommend(movie):
-    movie = movie.title()
+    movie = movie.lower()
 
-    if movie not in movies['title'].values:
-        return ["Movie not found ❌"]
+    # Flexible match
+    matches = movies[movies['title'].str.lower().str.contains(movie)]
 
-    movie_index = movies[movies['title'] == movie].index[0]
+    if matches.empty:
+        return [], []
+
+    movie_index = matches.index[0]
     distances = similarity[movie_index]
 
-    movies_list = sorted(list(enumerate(distances)),
-                         reverse=True,
-                         key=lambda x: x[1])[1:10]
+    movies_list = sorted(
+        list(enumerate(distances)),
+        reverse=True,
+        key=lambda x: x[1]
+    )[1:10]   # take more, filter later
 
-    recommendations = []
-    seen = set()
+    recommended_movies = []
+    recommended_posters = []
+    recommended_ratings = []
+    recommended_years = []
 
     for i in movies_list:
+        movie_id = movies.iloc[i[0]].movie_id
         title = movies.iloc[i[0]].title
-        if title not in seen:
-            recommendations.append(title)
-            seen.add(title)
 
-    return recommendations
+        poster, rating, year = fetch_movie_details(movie_id)
+
+        if "placeholder" in poster:
+            continue
+
+        recommended_movies.append(title)
+        recommended_posters.append(poster)
+        recommended_ratings.append(rating)
+        recommended_years.append(year)
+
+        if len(recommended_movies) == 3:
+            break
+
+    return recommended_movies, recommended_posters, recommended_ratings, recommended_years
+
+@st.cache_data(ttl=3600)
+def get_trending_movies():
+    url = f"https://api.themoviedb.org/3/trending/movie/day?api_key={API_KEY}"
+
+    try:
+        response = requests.get(url, timeout=5)
+        data = response.json()
+
+        trending_names = []
+        trending_posters = []
+
+        for movie in data.get("results", [])[:5]:
+            title = movie.get("title")
+            poster_path = movie.get("poster_path")
+
+            if poster_path:
+                poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                trending_names.append(title)
+                trending_posters.append(poster_url)
+
+        return trending_names, trending_posters
+
+    except Exception:
+        return [], []
+
+def fetch_movie_full_details(movie_name):
+    search_url = f"https://api.themoviedb.org/3/search/movie?api_key={API_KEY}&query={movie_name}"
+
+    try:
+        data = requests.get(search_url).json()
+
+        results = data.get("results")
+        if not results:
+            return None
+
+        movie = results[0]
+        movie_id = movie.get("id")
+
+        details_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={API_KEY}"
+        videos_url = f"https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key={API_KEY}"
+
+        details = requests.get(details_url).json()
+        videos = requests.get(videos_url).json()
+
+        trailer_key = None
+        for v in videos.get("results", []):
+            if v.get("type") == "Trailer" and v.get("site") == "YouTube":
+                trailer_key = v.get("key")
+                break
+
+        return {
+            "title": details.get("title"),
+            "overview": details.get("overview"),
+            "rating": details.get("vote_average"),
+            "year": details.get("release_date", "")[:4],
+            "trailer": f"https://www.youtube.com/watch?v={trailer_key}" if trailer_key else None
+        }
+
+    except Exception as e:
+        print("ERROR:", e)
+        return None

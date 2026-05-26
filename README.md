@@ -66,20 +66,10 @@ CineMatch is an AI-powered movie recommendation web app that suggests movies bas
 ## 🛠️ Installation
 
 ```bash
-git clone https://github.com/your-username/movie-recommendation-system.git
+git clone https://github.com/charankotta32-star/movie-recommendation-system.git
 cd movie-recommendation-system
 pip install -r requirements.txt
 streamlit run app.py
-```
-
----
-
-## 🔐 API Key Setup
-
-Create a `.env` or use Streamlit secrets:
-
-```
-TMDB_API_KEY=your_api_key_here
 ```
 
 ---

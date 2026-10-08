@@ -78,7 +78,7 @@ streamlit run app.py
 
 **Charan Ram Sai**
 B.Tech CSE (AI & ML) @ SRM KTR
-
+Minor Robotics 
 🔗 GitHub: https://github.com/charankotta32-star
 
 ---
